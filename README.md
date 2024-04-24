@@ -1,0 +1,2 @@
+# Spotify Clone
+Excited to showcase my Spotify replica project! Built with HTML, CSS, and JavaScript, it offers a seamless music experience. Users can play, skip tracks, adjust volume, and mute, all with a responsive design. The library section transforms into a mobile-friendly hamburger menu. Notably, it operates server-independently, retrieving songs from a playlist folder. Dive into the code and explore the immersive features! 🎵💻 #WebDevelopment #JavaScript #HTMLCSS #GitHub
