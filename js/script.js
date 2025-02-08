@@ -21,6 +21,9 @@ async function getSongs(folder) {
     currFolder = folder;
     try {
         let a = await fetch(`${folder}/`);
+        if (!a.ok) {
+            throw new Error(`Failed to fetch ${folder}/: ${a.statusText}`);
+        }
         let response = await a.text();
         let div = document.createElement("div");
         div.innerHTML = response;
@@ -78,43 +81,55 @@ const playMusic = (track, pause = false) => {
 }
 
 async function displayAlbums() {
-    let a = await fetch(`/songs/`)
-    let response = await a.text();
-    let div = document.createElement("div");
-    div.innerHTML = response
-    let anchors = div.getElementsByTagName("a")
-    let cardContainer = document.querySelector(".cardContainer")
-    let array = Array.from(anchors)
-    for (let index = 0; index < array.length; index++) {
-        let e = array[index];
-        if (e.href.includes("/songs") && !e.href.includes(".htaccess")) {
-            let folder = e.href.split("/").slice(-2)[0]
-            // Get the metadata of the folder
-            let a = await fetch(`/songs/${folder}/info.json`)
-            let response = await a.json();
-            cardContainer.innerHTML += `<div data-folder="${folder}" class="card round">
-            <div class="play">
-                <img src="/img/play.svg " alt="Play Button" class="circle">
-            </div>
-            <img src="/songs/${folder}/cover.jpg" alt=""
-                class="round">
-                <h2>${response.title}</h2>
-                <p>${response.description}</p>
-        </div>`
+    try {
+        let a = await fetch(`/songs/`);
+        if (!a.ok) {
+            throw new Error(`Failed to fetch /songs/: ${a.statusText}`);
         }
-
+        let response = await a.text();
+        let div = document.createElement("div");
+        div.innerHTML = response;
+        let anchors = div.getElementsByTagName("a");
+        let cardContainer = document.querySelector(".cardContainer");
+        let array = Array.from(anchors);
+        for (let index = 0; index < array.length; index++) {
+            let e = array[index];
+            if (e.href.includes("/songs") && !e.href.includes(".htaccess")) {
+                let folder = e.href.split("/").slice(-2)[0];
+                // Get the metadata of the folder
+                let a = await fetch(`/songs/${folder}/info.json`);
+                if (!a.ok) {
+                    throw new Error(`Failed to fetch /songs/${folder}/info.json: ${a.statusText}`);
+                }
+                let response = await a.json();
+                cardContainer.innerHTML += `<div data-folder="${folder}" class="card round">
+                <div class="play">
+                    <img src="/img/play.svg " alt="Play Button" class="circle">
+                </div>
+                <img src="/songs/${folder}/cover.jpg" alt=""
+                    class="round">
+                    <h2>${response.title}</h2>
+                    <p>${response.description}</p>
+            </div>`;
+            }
+        }
+        // Load the playlist whenever card is clicked
+        Array.from(document.getElementsByClassName("card")).forEach(e => {
+            e.addEventListener("click", async item => {
+                console.log("Fetching Songs");
+                songs = await getSongs(`/songs/${item.currentTarget.dataset.folder}`);
+                if (songs.length > 0) {
+                    playMusic(songs[0]);
+                } else {
+                    console.error("No songs found in the folder.");
+                }
+            });
+        });
+    } catch (error) {
+        console.error("Error displaying albums:", error);
     }
-     // Load the playlist whenever card is clicked
-     Array.from(document.getElementsByClassName("card")).forEach(e => { 
-        e.addEventListener("click", async item => {
-            console.log("Fetching Songs")
-            songs = await getSongs(`/songs/${item.currentTarget.dataset.folder}`)  
-            playMusic(songs[0])
-
-        })
-    })
-
 }
+
 async function main() {
     try {
         await getSongs("/songs/Angry_mood");
