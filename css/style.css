@@ -517,3 +517,12 @@ body {
         bottom: 10rem;
     }
 }
+
+.flex{
+    display: flex;
+}
+.white-border{
+    border:  2px solid white;
+    /* margin: 5px; */
+}
+
