@@ -19,46 +19,50 @@ function secondsToMinutesSeconds(seconds) {
 //Get songs name from the folder and show to the playlist
 async function getSongs(folder) {
     currFolder = folder;
-    let a = await fetch(`${folder}/`)
-    let response = await a.text()
-    let div = document.createElement("div")
-    div.innerHTML = response
-    let as = div.getElementsByTagName("a")
-    songs = []
-    for (let index = 0; index < as.length; index++) {
-        const element = as[index];
-        if (element.href.endsWith(".mp3")) {
-            songs.push(element.href.split(`${folder}/`)[1])
+    try {
+        let a = await fetch(`${folder}/`);
+        let response = await a.text();
+        let div = document.createElement("div");
+        div.innerHTML = response;
+        let as = div.getElementsByTagName("a");
+        songs = [];
+        for (let index = 0; index < as.length; index++) {
+            const element = as[index];
+            if (element.href.endsWith(".mp3")) {
+                songs.push(element.href.split(`${folder}/`)[1]);
+            }
         }
+        console.log(response);
+        console.log(songs);
+
+        // Show in playlist
+        let songUL = document.querySelector(".songPlaylist").getElementsByTagName("ul")[0];
+        songUL.innerHTML = " ";
+        for (const song of songs) {
+            songUL.innerHTML += `<li class="flex round"><img class="invert img-size" width="34" src="/img/music.svg" alt="">
+            <div class="info">
+                <div> ${song.replaceAll("%20", " ")} </div>
+                <div>Alshifa</div>
+            </div>
+            <div class="playnow flex">
+                <img class="invert img-size" src="/img/play.svg" alt="">
+            </div>
+        </li>`;
+        }
+
+        // Attach an event listener to each song
+        Array.from(document.querySelector(".songPlaylist").getElementsByTagName("li")).forEach(e => {
+            e.addEventListener("click", element => {
+                playMusic(e.querySelector(".info").firstElementChild.innerHTML.trim());
+                console.log(e.querySelector(".info").firstElementChild.innerHTML.trim());
+            });
+        });
+
+        return songs;
+    } catch (error) {
+        console.error("Error fetching songs:", error);
+        return [];
     }
-    console.log(response)
-    console.log(songs)
-
-    //Show in playlist
-    let songUL = document.querySelector(".songPlaylist").getElementsByTagName("ul")[0]
-    songUL.innerHTML = " "
-    for (const song of songs) {
-        songUL.innerHTML += `<li class="flex round"><img class="invert img-size" width="34" src="/img/music.svg" alt="">
-        <div class="info">
-            <div> ${song.replaceAll("%20", " ")} </div>
-            <div>Alshifa</div>
-        </div>
-        <div class="playnow flex">
-            <img class="invert img-size" src="/img/play.svg" alt="">
-        </div>
-    </li>`
-
-    }
-
-    //Attatch an event listener to each song
-    Array.from(document.querySelector(".songPlaylist").getElementsByTagName("li")).forEach(e => {
-        e.addEventListener("click", element => {
-            playMusic(e.querySelector(".info").firstElementChild.innerHTML.trim())
-            console.log(e.querySelector(".info").firstElementChild.innerHTML.trim())
-        })
-    })
-
-    return songs
 }
 
 const playMusic = (track, pause = false) => {
@@ -205,4 +209,7 @@ async function main() {
         });
     });
 }
-main()
+
+document.addEventListener("DOMContentLoaded", () => {
+    main();
+});
